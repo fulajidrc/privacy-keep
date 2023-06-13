@@ -5,29 +5,28 @@ const envUrl = process.env.NODE_ENV
     ? path.resolve(__dirname, `../${process.env.NODE_ENV}.env`) 
     : path.resolve(__dirname, `../.env`);
 console.log('envUrl', envUrl);
-// require('dotenv').config({
-//     path: envUrl
-// });
+
 dotenv.config({
   path: envUrl
 });
-import dbInit from './src/models';
-dbInit();
-import { sequelize } from './config/database';
+
 import { restRouter } from './src/routes';
-
-
-
-
+import Mongoose from './config/database';
+import bodyParser from 'body-parser';
 
 const app: Express = express();
 const port = process.env.PORT;
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
 
-sequelize.authenticate().then(() => {
-  console.log('Connection has been established successfully.');
-}).catch((error) => {
-  console.error('Unable to connect to the database: ', error);
-});
+// parse application/json
+app.use(bodyParser.json())
+
+Mongoose.then(() => {
+  console.log('database connected successfully!')
+}).catch((error:any) => {
+  console.log('Error while connecting database', error.message);
+})
 
 app.use("/api/", restRouter);
 
